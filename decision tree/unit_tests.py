@@ -16,7 +16,7 @@ def testPruning():
   data = [dict(a=1, b=1, c=1, Class=0), dict(a=1, b=0, c=0, Class=0), dict(a=0, b=1, c=0, Class=1), dict(a=0, b=0, c=0, Class=1), dict(a=0, b=0, c=1, Class=0)]
   validationData = [dict(a=0, b=0, c=1, Class=1)]
   tree = ID3.ID3(data, 0)
-  print "treesize is",ID3.treeSize(tree)
+  print "treesize is", ID3.treeSize(tree)
   ID3.prune(tree, validationData)
   if tree != None:
     ans = ID3.evaluate(tree, dict(a=0, b=1, c=1))
@@ -82,11 +82,39 @@ def testPruningOnHouseData(inFile):
     acc = ID3.test(tree, test)
     print "pruned tree test accuracy: ",acc
     withPruning.append(acc)
-    tree = ID3.ID3(train+valid, 'democrat')
+    tree = ID3.ID3(train + valid, 'democrat')
     acc = ID3.test(tree, test)
     print "no pruning test accuracy: ",acc
     withoutPruning.append(acc)
   print withPruning
   print withoutPruning
   print "average with pruning",sum(withPruning)/len(withPruning)," without: ",sum(withoutPruning)/len(withoutPruning)
-  
+
+# add for test
+def testWithoutPruningOnHouseData(inFile):
+    withoutPruning = []
+    data = parse.parse(inFile)
+    for i in range(100):
+        random.shuffle(data)
+        train = data[:len(data) / 2]
+        valid = data[len(data) / 2:3 * len(data) / 4]
+        test = data[3 * len(data) / 4:]
+
+        tree = ID3.ID3(train, 'democrat')
+        acc = ID3.test(tree, train)
+        print "training accuracy: ", acc
+        acc = ID3.test(tree, valid)
+        print "validation accuracy: ", acc
+        acc = ID3.test(tree, test)
+        print "test accuracy: ", acc
+
+        tree = ID3.ID3(train + valid, 'democrat')
+        acc = ID3.test(tree, test)
+        print "no pruning test accuracy: ", acc
+        withoutPruning.append(acc)
+    print withoutPruning
+
+
+# testID3AndEvaluate()
+# testID3AndTest()
+testWithoutPruningOnHouseData('./house_votes_84.data')
