@@ -69,7 +69,7 @@ def evaluate(node, example):
 
     return node.get_label()
 
-
+# choose best attribute with max infogain
 def chooseBestAttribute(examples):
     best = examples[0].keys()[0]
     if best == 'Class' and len(examples[0].keys()) > 1:
