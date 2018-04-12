@@ -15,7 +15,9 @@ class Node:
         return self.attribute
 
     def get_child(self, value):
-        return self.children[value]
+        if self.children.has_key(value):
+            return self.children[value]
+        return None
 
     def get_children(self):
         return self.children

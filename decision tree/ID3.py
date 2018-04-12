@@ -59,15 +59,12 @@ def evaluate(node, example):
     Takes in a tree and one example.  Returns the Class value that the tree
     assigns to the example.
     '''
-    while len(node.get_children()) != 0:
-        label = example[node.get_attribute()]
-        if node.get_children().has_key(label):
-            node = node.get_child(label)
-        # in case the training data doesn't contain the label, return the example's Class label
-        else:
-            return example['Class']
-
-    return node.get_label()
+    if node == None:
+		return example['Class']
+    if len(node.get_children()) == 0:
+		return node.get_label()
+		
+    return evaluate(node.get_child(example[node.get_attribute()]), example)
 
 # choose best attribute with max infogain
 def chooseBestAttribute(examples):

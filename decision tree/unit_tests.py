@@ -115,6 +115,6 @@ def testWithoutPruningOnHouseData(inFile):
     print withoutPruning
 
 
-# testID3AndEvaluate()
+testID3AndEvaluate()
 # testID3AndTest()
 testWithoutPruningOnHouseData('./house_votes_84.data')
