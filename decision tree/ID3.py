@@ -30,7 +30,6 @@ def ID3(examples, default):
             child = ID3(newExamples, mostFreqAttr(newExamples, 'Class'))
             root.children[value] = child
 
-    treeRoot = root
     return root
 
 
