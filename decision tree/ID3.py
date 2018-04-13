@@ -12,19 +12,17 @@ def ID3(examples, default):
     processMissingData(examples)
     values = [record['Class'] for record in examples]
     if len(examples) == 0:
-        return Node('Class', {}, default)
+        return Node('Class', {}, default, True)
 
     elif values.count(values[0]) == len(values):
-        return Node('Class', {}, values[0])
+        return Node('Class', {}, values[0], True, len(values))
 
     # in case examples only contain the Class labels, return directly
     elif len(examples[0]) == 1:
-        return Node('Class', {}, default)
+        return Node('Class', {}, default, True, 1)
 
     else:
-
         best = chooseBestAttribute(examples)
-
         root = Node(best, {}, None)
 
         for value in getValuesByKey(examples, best):
@@ -32,16 +30,34 @@ def ID3(examples, default):
             child = ID3(newExamples, mostFreqAttr(newExamples, 'Class'))
             root.children[value] = child
 
+    treeRoot = root
     return root
 
 
-def prune(node, examples):
+def prune(node, examples, root):
     '''
     Takes in a trained tree and a validation set of examples.  Prunes nodes in order
     to improve accuracy on the validation data; the precise pruning strategy is up to you.
     '''
-
-
+    if node.isLeaf == True:
+	return node
+    
+    if checkNodeIsLastLevel(node) == True:
+	beforeCorrectNum = test(root, examples)
+	newLabel = getMostFrequentClassValue(node)
+	node.set_to_leaf(newLabel)
+	afterCorrectNum = test(root, examples)
+	if beforeCorrectNum > afterCorrectNum:
+	    node.recover_to_node()
+	    
+	return node
+    
+    for child in node.children:
+	curNode = prune(node.children[child], examples, root)
+	node.children[child] = curNode
+	
+    return node
+	
 def test(node, examples):
     '''
     Takes in a trained tree and a test set of examples.  Returns the accuracy (fraction
@@ -60,11 +76,21 @@ def evaluate(node, example):
     assigns to the example.
     '''
     if node == None:
-		return example['Class']
+	return example['Class']
     if len(node.get_children()) == 0:
-		return node.get_label()
+	return node.get_label()
 		
     return evaluate(node.get_child(example[node.get_attribute()]), example)
+
+def checkAccurate(node, example):
+    counter = 0
+    for e in example:
+	expect_value = e["Class"]
+	real_value = evaluate(node, e)
+	if expect_value == real_value:
+	    counter += 1
+	    
+    return counter
 
 # choose best attribute with max infogain
 def chooseBestAttribute(examples):
@@ -173,3 +199,50 @@ def processMissingData(examples):
             if example[key] == '?':
                 example[key] = valueMap[key]
     return examples
+
+def checkNodeIsLastLevel(node):
+    '''
+    Check current node is the last level, and all of its children are leaves
+    This can guarantee pruning starts from bootom to up
+    '''
+    if node.isLeaf == True:
+	return False
+    if len(node.children) == 0:
+	return False
+    for child in node.children.values():
+	if child.isLeaf == False:
+	    return False
+	
+    return True
+
+def getMostFrequentClassValue(node):
+    classList = {}
+    for c in node.children:
+	child = node.children[c]
+	if len(child.leafClass) == 0:
+	    if (classList.has_key(child.label)):
+		classList[child.label] = classList[child.label] + child.trainingClassCounter
+	    else:
+		classList[child.label] = child.trainingClassCounter
+	else:
+	    for c in child.leafClass:
+		if classList.has_key(c):
+		    classList[c] = classList[c] + child.leafClass[c]
+		else:
+		    classList[c] = child.leafClass[c]
+		    
+    node.leafClass = classList
+    label = sorted(classList.items(),key=lambda item:item[1],reverse=True)[0][0]
+
+    return label
+
+def treeSize(node):
+    if node.isLeaf == True:
+	return 1
+    
+    totalChildren = 0
+    for c in node.children:
+	child = node.children[c]
+	totalChildren += treeSize(child)
+	
+    return totalChildren
