@@ -32,8 +32,10 @@ def ID3(examples, default):
 
     return root
 
+def prune(node, examples):
+    return pruneAndTest(node, examples, node)
 
-def prune(node, examples, root):
+def pruneAndTest(node, examples, root):
     '''
     Takes in a trained tree and a validation set of examples.  Prunes nodes in order
     to improve accuracy on the validation data; the precise pruning strategy is up to you.
@@ -52,7 +54,7 @@ def prune(node, examples, root):
 	return node
     
     for child in node.children:
-	curNode = prune(node.children[child], examples, root)
+	curNode = pruneAndTest(node.children[child], examples, root)
 	node.children[child] = curNode
 	
     return node
