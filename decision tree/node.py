@@ -2,7 +2,7 @@ class Node:
     def __init__(self):
         self.attribute = None
         self.children = {}
-        slef.childrenBuffer = {}
+        self.childrenBuffer = {}
         self.label = None
         self.isLeaf = False
         self.trainingClassCounter = 0
@@ -45,7 +45,7 @@ class Node:
         self.label = label
         
     def recover_to_node(self):
-        if self.isLeaf == False:
+        if self.isLeaf is False:
             return
         self.children = self.childrenBuffer;
         self.childrenBuffer = {}

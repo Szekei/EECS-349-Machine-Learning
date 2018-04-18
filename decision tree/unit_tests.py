@@ -1,4 +1,8 @@
 import ID3, parse, random
+import matplotlib.pyplot as plt
+import numpy as np
+
+
 
 def testID3AndEvaluate():
   data = [dict(a=1, b=0, Class=1), dict(a=1, b=1, Class=1)]
@@ -115,7 +119,64 @@ def testWithoutPruningOnHouseData(inFile):
     print withoutPruning
 
 
-testPruningOnHouseData('./house_votes_84.data')
+# inFile - string location of the house data file
+def producePlotDataTest(data, training_size):
+    withPruning = []
+    withoutPruning = []
+    train_len = 7*(training_size/10);
+    valid_len = 3*(training_size/10);
+    for i in range(100):
+        random.shuffle(data)
+        train = data[:train_len]
+        valid = data[train_len:train_len + valid_len]
+        test = data[train_len + valid_len:]
+
+        tree = ID3.ID3(train, 'democrat')
+        ID3.prune(tree, valid)
+        prune_acc = ID3.test(tree, test)
+        print "pruned tree test accuracy: ", prune_acc
+        withPruning.append(prune_acc)
+
+        tree = ID3.ID3(train + valid, 'democrat')
+        acc = ID3.test(tree, test)
+        print "no pruning test accuracy: ", acc
+        withoutPruning.append(acc)
+    print withPruning
+    print withoutPruning
+    print "average with pruning", sum(withPruning) / len(withPruning), " without: ", sum(withoutPruning) / len(
+        withoutPruning)
+    return [sum(withPruning) / len(withPruning), sum(withoutPruning) / len(withoutPruning)]
+
+def producePlotDataSet(inFile):
+
+    data = parse.parse(inFile)
+    prune = []
+    nonprune = []
+
+    for i in xrange(10, 301, 10):
+        res = producePlotDataTest(data, i)
+        prune.append(res[0])
+        nonprune.append(res[1])
+
+    x_step = np.arange(10, 301, 10)
+
+    axes = plt.gca()
+    axes.set_ylim([0.6, 1])
+
+    plt.plot(x_step, prune, 'r--', x_step, nonprune, 'b--')
+    plt.gca().legend(('average with pruning', 'average without pruning'), loc=4)
+    plt.xlabel('Number of training examples')
+    plt.ylabel('Accuracy on test data')
+    plt.title('Average accuracy of different training sizes')
+
+    plt.show()
+
+
+
+
+# testPruningOnHouseData('./house_votes_84.data')
 #testID3AndEvaluate()
 #testID3AndTest()
 #testWithoutPruningOnHouseData('./house_votes_84.data')
+# testPruningOnHouseData('./house_votes_84.data')
+producePlotDataSet('./house_votes_84.data')
